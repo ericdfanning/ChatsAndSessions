@@ -5,6 +5,8 @@ class App extends React.Component {
 	constructor(props) {
 		super(props)
 
+		axios.defaults.withCredentials = true
+
 		this.state = {
 			messages: [],
 			message: '',
@@ -15,23 +17,20 @@ class App extends React.Component {
 	}
 
 	componentWillMount() {
-		axios.defaults.withCredentials = true
+
 		axios.get('http://127.0.0.1:3304/home')
 		  .then((res) => {
 		  	if (res.data.isLoggedIn) {
-		  		// console.log('IS LOGGED IN', res.data.isLoggedIn)
 		  		this.setState({messages: res.data.messages, isLoggedIn: res.data.isLoggedIn, name: res.data.name, enteredName: true})
 		  	} else {
-		  		// console.log('NOT LOGGED IN', res.data);
 		  		this.setState({messages: [], isLoggedIn: false, name: ''})
 		  	}
 		  })
 		  .catch((err) => console.log('you suck....did not get message'))
 	}
 
-	// *** React's lifecycle methods ***
 	updateMessages() {
-		// console.log("UPDATE CALLED")
+
 		axios.get('http://127.0.0.1:3304/getMessages')
 		  .then((res) => {
 		  	this.setState({messages: res.data})
@@ -53,10 +52,10 @@ class App extends React.Component {
 
 	sendToServer(e) {
 		e.preventDefault()
-		axios.defaults.withCredentials = true
-		// console.log('SENDING MESSAGE')
+
 		axios.post('http://127.0.0.1:3304/postMessage', {message: `${this.state.name}: ${this.state.message}`})
-		  .then(() => {
+		  .then((res) => {
+		  	console.log("message posted", res.data.messages);
 				this.updateMessages()
 				this.setState({message: ''})
 		  })
@@ -65,20 +64,14 @@ class App extends React.Component {
 	setName(e) {
 		e.preventDefault()
 		e.persist()
-		// console.log('name', e.target.name.value !== '')
+
 		if (e.target.name.value !== '') {
-			axios.defaults.withCredentials = true
-			var name = e.target.name.value
-			if (name === 'Josh' || name === 'josh' || name === 'Joshua' || name === 'joshua' || name === 'j-dizzle' || name === 'jdizzle' || name === 'J-Dizzle' || name === 'J-dizzle') {
-				name = "I\'m garbage!"
-			}
-			console.log('NAME IS', name)
-			axios.post('http://127.0.0.1:3304/logIn', {name: name})
+
+			axios.post('http://127.0.0.1:3304/logIn', {name: e.target.name.value})
 			  .then((res) => {
-			  	// console.log('LOGIN RESPONSE', res)
-			    this.setState({enteredName: true, name: name, messages: res.data.messages})
-			    // this.updateMessages()
+			    this.setState({enteredName: true, name: e.target.name.value, messages: res.data.messages})
 			  })
+
 		} else {
 			alert("Can't be anonymous....NOT TAADAAAYYY")
 		}
@@ -88,8 +81,6 @@ class App extends React.Component {
 		e.preventDefault()
 		this.setState({message: e.target.value})
 	}
-
-	// *** End of lifecycle methods ***
 
 	render() {
 		return (
